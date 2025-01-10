@@ -1,4 +1,4 @@
-use iced::widget::{button, column, container, text, text_input};
+use iced::widget::{button, column, container, row, text, text_input};
 use iced::widget::{Column, Container, Row, Text};
 use iced::{alignment, border};
 use iced::{Application, Border, Color, Element, Settings, Theme};
@@ -20,16 +20,12 @@ struct SudokuSquare {
 
 #[derive(Debug, Clone)]
 struct Sudoku {
-    value: usize,
-    text: String,
     grid: Vec<Vec<SudokuSquare>>,
 }
 
 impl Default for Sudoku {
     fn default() -> Self {
         Sudoku {
-            value: 0,
-            text: String::from("Hello"),
             grid: vec![vec![SudokuSquare::default(); 9]; 9],
         }
     }
@@ -37,7 +33,11 @@ impl Default for Sudoku {
 
 #[derive(Debug, Clone)]
 enum Message {
+    Reset,
+    Lock,
+    Clear,
     TextChanged(String, String), // (ID, Text)
+    Solve,
 }
 
 impl Sudoku {
@@ -46,15 +46,50 @@ impl Sudoku {
             Message::TextChanged(id, input) => {
                 self.square_text_update(&id, &input);
             }
+            Message::Reset => {
+                self.grid = vec![vec![SudokuSquare::default(); 9]; 9];
+            }
+            Message::Lock => {
+                // Lock the given squares
+                for c in 0..9 {
+                    for r in 0..9 {
+                        if self.grid[c][r].value.is_some() {
+                            self.grid[c][r].given = true;
+                        }
+                    }
+                }
+            }
+            Message::Clear => {
+                // Clear all the edited squares, leaving the given ones
+                for c in 0..9 {
+                    for r in 0..9 {
+                        if !self.grid[c][r].given {
+                            self.grid[c][r].value = None;
+                            self.grid[c][r].given = false;
+                        }
+                    }
+                }
+            }
+            Message::Solve => {
+                // Solve the Sudoku puzzle
+                self.solve();
+            }
         }
     }
 
+    // Define the view of the application
     fn view(&self) -> Column<Message> {
         // Create widget from Sudoku grid
         let self_grid_widget: Container<'_, Message> = create_grid_widget(&self.grid);
 
         column![
             text("Welcome to the Sudoku Solver!").size(30),
+            row![
+                Container::new(button("Reset").on_press(Message::Reset).padding(5)).padding(3),
+                Container::new(button("Lock").on_press(Message::Lock) .padding(5)).padding(3),
+                Container::new(button("Clear").on_press(Message::Clear).padding(5)).padding(3),
+                Container::new(button("Solve!").on_press(Message::Solve).padding(5)).padding(3),
+            ],
             self_grid_widget,
         ]
     }
@@ -81,6 +116,11 @@ impl Sudoku {
         } else {
             self.grid[c][r].value = None;
         }
+    }
+
+    fn solve(&mut self) {
+        // Solve the Sudoku puzzle
+        // Todo
     }
 }
 
@@ -112,7 +152,9 @@ fn create_grid_widget(grid: &Vec<Vec<SudokuSquare>>) -> Container<'static, Messa
                     // Create the Sudoku cell with a text box for user input
                     // Give each text box an ID with its indices to identify which text is updated
                     let box_id: String = format!("square-C{}-R{}", c, r);
-                    let text_value = match grid[c][r].value {
+                    let square: &SudokuSquare = &grid[c][r];
+
+                    let text_value = match square.value {
                         Some(value) => value.to_string(),
                         None => "".to_string(),
                     };
@@ -124,7 +166,16 @@ fn create_grid_widget(grid: &Vec<Vec<SudokuSquare>>) -> Container<'static, Messa
                         .padding(5)
                         .size(25)
                         .width(50)
-                        .align_x(alignment::Horizontal::Center);
+                        .align_x(alignment::Horizontal::Center)
+                        .font(iced::font::Font {
+                            // Bold font for the given Sudoku squares
+                            weight: if square.given {
+                                iced::font::Weight::Bold
+                            } else {
+                                iced::font::Weight::Normal
+                            },
+                            ..Default::default()
+                        });
 
                     inner_row = inner_row.push(input_square);
                 }
