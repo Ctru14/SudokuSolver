@@ -1,3 +1,6 @@
+mod sudoku;
+use sudoku::{Sudoku, SudokuSquare};
+
 use iced::widget::{button, column, container, row, text, text_input};
 use iced::widget::{Column, Container, Row, Text};
 use iced::{alignment, border};
@@ -11,26 +14,6 @@ pub fn main() -> iced::Result {
         .run()
 }
 
-#[derive(Default, Debug, Clone)]
-struct SudokuSquare {
-    value: Option<u32>,
-    candidates: Vec<u32>,
-    given: bool,
-}
-
-#[derive(Debug, Clone)]
-struct Sudoku {
-    grid: Vec<Vec<SudokuSquare>>,
-}
-
-impl Default for Sudoku {
-    fn default() -> Self {
-        Sudoku {
-            grid: vec![vec![SudokuSquare::default(); 9]; 9],
-        }
-    }
-}
-
 #[derive(Debug, Clone)]
 enum Message {
     Reset,
@@ -41,7 +24,7 @@ enum Message {
 }
 
 impl Sudoku {
-    fn update(&mut self, message: Message) {
+    pub fn update(&mut self, message: Message) {
         match message {
             Message::TextChanged(id, input) => {
                 self.square_text_update(&id, &input);
@@ -78,7 +61,7 @@ impl Sudoku {
     }
 
     // Define the view of the application
-    fn view(&self) -> Column<Message> {
+    pub fn view(&self) -> Column<Message> {
         // Create widget from Sudoku grid
         let self_grid_widget: Container<'_, Message> = create_grid_widget(&self.grid);
 
@@ -94,7 +77,7 @@ impl Sudoku {
         ]
     }
 
-    fn square_text_update(&mut self, id: &str, input: &str) {
+    pub fn square_text_update(&mut self, id: &str, input: &str) {
         // Parse ID into row and column indices
         let c: usize;
         let r: usize;
@@ -116,11 +99,6 @@ impl Sudoku {
         } else {
             self.grid[c][r].value = None;
         }
-    }
-
-    fn solve(&mut self) {
-        // Solve the Sudoku puzzle
-        // Todo
     }
 }
 
