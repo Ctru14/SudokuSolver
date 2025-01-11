@@ -42,7 +42,7 @@ impl Sudoku {
                         self.update_options(r, c);
                         if self.grid[r][c].options.len() == 1 {
                             self.set_square(r, c, self.grid[r][c].options[0], false);
-                            println!("One square option: {} in space R={}, C={}", self.grid[r][c].value.unwrap(), r + 1, c + 1);
+                            println!("One option: {} at R={}, C={}", self.grid[r][c].value.unwrap(), r + 1, c + 1);
                             iteration_change = true;
                             if next { return; }
                             else { continue 'iteration_loop; }
@@ -161,7 +161,7 @@ impl Sudoku {
                 }
             }
             // If you get here, no other square has this option. Return it.
-            println!("Only row option: {} in space R={}, C={}", *option, r + 1, c + 1);
+            println!("Only row option: {} at R={}, C={}", *option, r + 1, c + 1);
             return Some(*option);
         }
         None
@@ -185,7 +185,7 @@ impl Sudoku {
                 }
             }
             // If you get here, no other square has this option. Return it.
-            println!("Only col option: {} in space R={}, C={}", *option, r + 1, c + 1);
+            println!("Only col option: {} at R={}, C={}", *option, r + 1, c + 1);
             return Some(*option);
         }
         None
@@ -212,7 +212,7 @@ impl Sudoku {
                 }
             }
             // If you get here, no other square has this option. Return it.
-            println!("Only box option: {} in space R={}, C={}", *option, r + 1, c + 1);
+            println!("Only box option: {} at R={}, C={}", *option, r + 1, c + 1);
             return Some(*option);
         }
         None
@@ -248,25 +248,33 @@ impl Sudoku {
     }
 
     // Check the Sudoku puzzle to see if it is successfully solved
-    pub fn check_solved(&mut self) -> bool {
+    pub fn check_solved(&mut self) {
+        // Sudoku puzzle is not solved if any check fails
+        let mut solved: bool = true;
         for i in 0..9usize {
             if !self.is_row_solved(i) {
-                self.solved = false;
-                return false;
+                solved = false;
+                break;
             }
             if !self.is_col_solved(i) {
-                self.solved = false;
-                return false;
+                solved = false;
+                break;
             }
             if !self.is_box_solved(i) {
-                self.solved = false;
-                return false;
+                solved = false;
+                break;
             }
         }
+        self.solved = solved;
 
-        self.solved = true;
-        self.status = String::default();
-        return true;
+        // Display solved status
+        if self.solved {
+            self.status = "Sudoku puzzle solved!".to_string();
+        }
+        else {
+            self.status = "Sudoku puzzle is incorrect".to_string();
+        }
+        println!("{}", self.status);
     }
 
     fn is_row_solved(&self, r: usize) -> bool {

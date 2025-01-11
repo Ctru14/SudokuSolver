@@ -68,14 +68,7 @@ impl Sudoku {
                 self.solve(true);
             }
             Message::Check => {
-                if self.check_solved() {
-                    println!("Sudoku puzzle solved!");
-                    self.status = String::default();
-                }
-                else {
-                    println!("Sudoku puzzle is not solved");
-                    self.status = "Puzzle is incorrect".to_string();
-                }
+                self.check_solved();
             }
         }
     }
@@ -96,7 +89,6 @@ impl Sudoku {
                 Container::new(button("Check").on_press(Message::Check).padding(5)).padding(3),
             ],
             self_grid_widget,
-            text(if self.solved { "Puzzle solved!" } else { "" }).size(20),
             text(self.status.clone()).size(20),
         ]
     }
