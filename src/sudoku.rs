@@ -71,6 +71,10 @@ impl Sudoku {
         } 
         else {
             self.check_solved();
+            if !self.solved {
+                self.status = "Unable to solve this Sudoku grid".to_string();
+                println!("{}", self.status);
+            }
         }
     }
 

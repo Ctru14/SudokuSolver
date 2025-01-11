@@ -33,6 +33,8 @@ impl Sudoku {
             }
             Message::Reset => {
                 self.grid = vec![vec![SudokuSquare::default(); 9]; 9];
+                self.solved = false;
+                self.status = String::default();
             }
             Message::Lock => {
                 // Lock the given squares
@@ -54,6 +56,8 @@ impl Sudoku {
                         }
                     }
                 }
+                self.solved = false;
+                self.status = String::default();
             }
             Message::Solve => {
                 // Solve the Sudoku puzzle
@@ -130,6 +134,7 @@ impl Sudoku {
                 given: given,
             };
             self.solved = false;
+            self.status = String::default();
         }
     }
 }
