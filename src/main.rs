@@ -95,9 +95,20 @@ impl Sudoku {
         // Update square value with new input
         let new_text = get_new_square_text(&prev_text, &input);
         if new_text.len() > 0 {
-            self.grid[c][r].value = Some(new_text.parse::<u32>().unwrap());
+            self.set_square(c, r, new_text.parse::<u32>().unwrap(), false);
         } else {
             self.grid[c][r].value = None;
+        }
+    }
+
+    // Set the grid's square to the given value
+    pub fn set_square(&mut self, r: usize, c: usize, val: u32, given: bool) {
+        if val >= 1 && val <= 9 {
+            self.grid[r][c] = SudokuSquare {
+                value: Some(val),
+                options: Vec::default(),
+                given: given,
+            };
         }
     }
 }

@@ -1,4 +1,4 @@
-use std::default;
+use std::{default, iter};
 
 #[derive(Default, Debug, Clone)]
 pub struct SudokuSquare {
@@ -28,22 +28,33 @@ impl Sudoku {
         
         let mut iteration_change: bool = true;
 
-        while iteration_change {
+        'iteration_loop: while iteration_change {
             iteration_change = false;
 
-            // Loop through each square in the grid
+            // Loop Solve 1: Update square if row, column, or box has only one option
             for r in 0..9 {
                 for c in 0..9 {
                     if self.grid[r][c].value.is_none() {
-                        // Solve 1: Update square if row, column, or box has only one option
                         self.update_options(r, c);
                         if self.grid[r][c].options.len() == 1 {
-                            self.grid[r][c].value = Some(self.grid[r][c].options[0]);
+                            self.set_square(r, c, self.grid[r][c].options[0], false);
+                            println!("One square option: {} in space R={}, C={}", self.grid[r][c].value.unwrap(), r + 1, c + 1);
                             iteration_change = true;
+                            continue 'iteration_loop;
                         }
+                    }
+                }
+            }
 
-                        // Solve 2: Update square if only square in row, column, or box with option
-                        // Todo
+            // Loop Solve 2: Update square if only square in row, column, or box with option
+            // This is in a separate loop to ensure that all the options are updated before checking
+            for r in 0..9 {
+                for c in 0..9 {
+                    if self.grid[r][c].value.is_none() {
+                        iteration_change = self.update_only_options(r, c);
+                        if iteration_change { 
+                            continue 'iteration_loop;
+                        } 
                     }
                 }
             }
@@ -115,7 +126,110 @@ impl Sudoku {
         options
     }
 
-    // 
+    // Determine if the square is the only one in its row with a certain option
+    fn row_only_option(&self, r: usize, c: usize) -> Option<u32> {
+        let square_options: &Vec<u32> = &self.grid[r][c].options;
+        'option_loop: for option in square_options {
+            // Check every other square in the row to determine if the option
+            // is only applicable in this square
+            for i in 0..9usize {
+                // Do not check the square in question or filled squares
+                let check_square: &SudokuSquare = &self.grid[i][c];
+                if i != r {
+                    // Skip this outer loop option if this square also has the option or the value
+                    if check_square.value == Some(*option) || 
+                       (check_square.value.is_none() && check_square.options.contains(option)) {
+                        continue 'option_loop;
+                    }
+                }
+            }
+            // If you get here, no other square has this option. Return it.
+            println!("Only row option: {} in space R={}, C={}", *option, r + 1, c + 1);
+            return Some(*option);
+        }
+        None
+    }
+
+    // Determine if the square is the only one in its column with a certain option
+    fn col_only_option(&self, r: usize, c: usize) -> Option<u32> {
+        let square_options: &Vec<u32> = &self.grid[r][c].options;
+        'option_loop: for option in square_options {
+            // Check every other square in the column to determine if the option
+            // is only applicable in this square
+            for j in 0..9usize {
+                // Do not check the square in question or filled squares
+                let check_square: &SudokuSquare = &self.grid[r][j];
+                if j != c {
+                    // Skip this outer loop option if this square also has the option or the value
+                    if check_square.value == Some(*option) || 
+                       (check_square.value.is_none() && check_square.options.contains(option)) {
+                        continue 'option_loop;
+                 }
+                }
+            }
+            // If you get here, no other square has this option. Return it.
+            println!("Only col option: {} in space R={}, C={}", *option, r + 1, c + 1);
+            return Some(*option);
+        }
+        None
+    }
+
+    // Determine if the square is the only one in its 3x3 box with a certain option
+    fn box_only_option(&self, r: usize, c: usize) -> Option<u32> {
+        let square_options: &Vec<u32> = &self.grid[r][c].options;
+        'option_loop: for option in square_options {
+            // Check every other square in the box to determine if the option
+            // is only applicable in this square
+            let r_start = r - r % 3;
+            let c_start = c - c % 3;
+            for i in r_start..r_start + 3 {
+                for j in c_start..c_start + 3 {
+                    let check_square: &SudokuSquare = &self.grid[i][j];
+                    if i != r && j != c {
+                        // Skip this outer loop option if this square also has the option or the value
+                        if check_square.value == Some(*option) || 
+                           (check_square.value.is_none() && check_square.options.contains(option)) {
+                            continue 'option_loop;
+                        }
+                    }
+                }
+            }
+            // If you get here, no other square has this option. Return it.
+            println!("Only box option: {} in space R={}, C={}", *option, r + 1, c + 1);
+            return Some(*option);
+        }
+        None
+    }
+
+    // Check the row, column, and box to determine if the square has an only option, and set value if found
+    fn update_only_options(&mut self, r: usize, c: usize) -> bool {
+        // Row only option check
+        match self.row_only_option(r, c) {
+            None => { },
+            Some(i) => {
+                self.set_square(r, c, i, false);
+                return true;
+            }
+        }
+        // Column only option check
+        match self.col_only_option(r, c) {
+            None => { },
+            Some(i) => {
+                self.set_square(r, c, i, false);
+                return true;
+            }
+        }
+        // Box only option check
+        match self.box_only_option(r, c) {
+            None => { },
+            Some(i) => {
+                self.set_square(r, c, i, false);
+                return true;
+            }
+        }
+        return false;
+    }
+
 }
 
 
