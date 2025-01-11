@@ -21,6 +21,8 @@ enum Message {
     Clear,
     TextChanged(String, String), // (ID, Text)
     Solve,
+    SolveNext,
+    Check,
 }
 
 impl Sudoku {
@@ -55,7 +57,21 @@ impl Sudoku {
             }
             Message::Solve => {
                 // Solve the Sudoku puzzle
-                self.solve();
+                self.solve(false);
+            }
+            Message::SolveNext => {
+                // Solve the Sudoku puzzle
+                self.solve(true);
+            }
+            Message::Check => {
+                if self.check_solved() {
+                    println!("Sudoku puzzle solved!");
+                    self.status = String::default();
+                }
+                else {
+                    println!("Sudoku puzzle is not solved");
+                    self.status = "Puzzle is incorrect".to_string();
+                }
             }
         }
     }
@@ -71,9 +87,13 @@ impl Sudoku {
                 Container::new(button("Reset").on_press(Message::Reset).padding(5)).padding(3),
                 Container::new(button("Lock").on_press(Message::Lock) .padding(5)).padding(3),
                 Container::new(button("Clear").on_press(Message::Clear).padding(5)).padding(3),
+                Container::new(button("Solve Next").on_press(Message::SolveNext).padding(5)).padding(3),
                 Container::new(button("Solve!").on_press(Message::Solve).padding(5)).padding(3),
+                Container::new(button("Check").on_press(Message::Check).padding(5)).padding(3),
             ],
             self_grid_widget,
+            text(if self.solved { "Puzzle solved!" } else { "" }).size(20),
+            text(self.status.clone()).size(20),
         ]
     }
 
@@ -109,6 +129,7 @@ impl Sudoku {
                 options: Vec::default(),
                 given: given,
             };
+            self.solved = false;
         }
     }
 }

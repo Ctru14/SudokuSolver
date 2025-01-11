@@ -10,6 +10,8 @@ pub struct SudokuSquare {
 #[derive(Debug, Clone)]
 pub struct Sudoku {
     pub grid: Vec<Vec<SudokuSquare>>,
+    pub solved: bool,
+    pub status: String,
 }
 
 impl Default for Sudoku {
@@ -17,13 +19,15 @@ impl Default for Sudoku {
         Sudoku {
             grid: med_board_1(),
             // grid: vec![vec![SudokuSquare::default(); 9]; 9],
+            solved: false,
+            status: String::default(),
         }
     }
 }
 
 impl Sudoku {
     // Solve the puzzle! Public function called on solve button
-    pub fn solve(&mut self) {
+    pub fn solve(&mut self, next: bool) {
         // Solve the Sudoku puzzle
         
         let mut iteration_change: bool = true;
@@ -40,7 +44,8 @@ impl Sudoku {
                             self.set_square(r, c, self.grid[r][c].options[0], false);
                             println!("One square option: {} in space R={}, C={}", self.grid[r][c].value.unwrap(), r + 1, c + 1);
                             iteration_change = true;
-                            continue 'iteration_loop;
+                            if next { return; }
+                            else { continue 'iteration_loop; }
                         }
                     }
                 }
@@ -53,11 +58,19 @@ impl Sudoku {
                     if self.grid[r][c].value.is_none() {
                         iteration_change = self.update_only_options(r, c);
                         if iteration_change { 
-                            continue 'iteration_loop;
+                            if next { return; }
+                            else { continue 'iteration_loop; }
                         } 
                     }
                 }
             }
+        }
+
+        if next {
+            println!("Solve Next unable to find next value");
+        } 
+        else {
+            self.check_solved();
         }
     }
 
@@ -230,6 +243,74 @@ impl Sudoku {
         return false;
     }
 
+    // Check the Sudoku puzzle to see if it is successfully solved
+    pub fn check_solved(&mut self) -> bool {
+        for i in 0..9usize {
+            if !self.is_row_solved(i) {
+                self.solved = false;
+                return false;
+            }
+            if !self.is_col_solved(i) {
+                self.solved = false;
+                return false;
+            }
+            if !self.is_box_solved(i) {
+                self.solved = false;
+                return false;
+            }
+        }
+
+        self.solved = true;
+        self.status = String::default();
+        return true;
+    }
+
+    fn is_row_solved(&self, r: usize) -> bool {
+        // Check if each value 1-9 is present in the row
+        'value_loop: for val in 1..=9u32 {
+            // Check each square in the row for the value
+            for i in 0..9usize {
+                if self.grid[r][i].value == Some(val) {
+                    continue 'value_loop;
+                }
+            }
+            return false;
+        }
+        return true;
+    }
+
+    fn is_col_solved(&self, c: usize) -> bool {
+        // Check if each value 1-9 is present in the column
+        'value_loop: for val in 1..=9u32 {
+            // Check each square in the column for the value
+            for i in 0..9usize {
+                if self.grid[i][c].value == Some(val) {
+                    continue 'value_loop;
+                }
+            }
+            return false;
+        }
+        return true;
+    }
+
+    fn is_box_solved(&self, b: usize) -> bool {
+        // Check if each value 1-9 is present in the column
+        'value_loop: for val in 1..=9u32 {
+            // Check each square in the 3x3 box for the value
+            for r_offset in 0..3usize {
+                for c_offset in 0..3usize {
+                    // Parse 1D 1-9 box number into 2D box index
+                    let r: usize = (b / 3) * 3 + r_offset;
+                    let c: usize = (b % 3) * 3 + c_offset;
+                    if self.grid[r][c].value == Some(val) {
+                        continue 'value_loop;
+                    }
+                }
+            }
+            return false;
+        }
+        return true;
+    }
 }
 
 
