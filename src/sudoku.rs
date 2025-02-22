@@ -17,7 +17,7 @@ pub struct Sudoku {
 impl Default for Sudoku {
     fn default() -> Self {
         Sudoku {
-            grid: med_board_1(),
+            grid: hard_board_1(),
             // grid: vec![vec![SudokuSquare::default(); 9]; 9],
             solved: false,
             status: String::default(),
@@ -78,7 +78,7 @@ impl Sudoku {
         }
     }
 
-    fn update_options(&mut self, r: usize, c: usize) {
+    pub fn update_options(&mut self, r: usize, c: usize) {
         // List the possible options for a given square
         
         // Find options for the row, column, and 3x3 box
@@ -202,7 +202,7 @@ impl Sudoku {
             for i in r_start..r_start + 3 {
                 for j in c_start..c_start + 3 {
                     let check_square: &SudokuSquare = &self.grid[i][j];
-                    if i != r && j != c {
+                    if i != r || j != c {
                         // Skip this outer loop option if this square also has the option or the value
                         if check_square.value == Some(*option) || 
                            (check_square.value.is_none() && check_square.options.contains(option)) {
@@ -325,6 +325,15 @@ impl Sudoku {
     }
 }
 
+// Helper function to print out a Vec<u32> as a string
+pub fn vec_to_string(vec: &Vec<u32>) -> String {
+    let mut str: String = "".to_string();
+    for num in vec {
+        str += &num.to_string();
+    }
+    str
+}
+
 
 // ------------------------ Default boards ------------------------
 
@@ -351,5 +360,37 @@ pub fn med_board_1() -> Vec<Vec<SudokuSquare>> {
         vec![ sqr(0), sqr(0), sqr(4), /**/ sqr(0), sqr(0), sqr(0), /**/ sqr(6), sqr(5), sqr(0) ],
         vec![ sqr(2), sqr(8), sqr(0), /**/ sqr(3), sqr(0), sqr(0), /**/ sqr(0), sqr(0), sqr(0) ],
         vec![ sqr(0), sqr(5), sqr(0), /**/ sqr(1), sqr(0), sqr(0), /**/ sqr(0), sqr(2), sqr(0) ],
+    ]
+}
+
+pub fn hard_board_1() -> Vec<Vec<SudokuSquare>> {
+    vec![
+        vec![ sqr(4), sqr(3), sqr(0), /**/ sqr(0), sqr(0), sqr(0), /**/ sqr(0), sqr(8), sqr(7) ],
+        vec![ sqr(0), sqr(0), sqr(2), /**/ sqr(0), sqr(1), sqr(0), /**/ sqr(0), sqr(5), sqr(0) ],
+        vec![ sqr(0), sqr(0), sqr(0), /**/ sqr(0), sqr(0), sqr(3), /**/ sqr(1), sqr(4), sqr(0) ],
+        /**************************************************************************************/
+        vec![ sqr(2), sqr(0), sqr(9), /**/ sqr(0), sqr(0), sqr(0), /**/ sqr(4), sqr(0), sqr(0) ],
+        vec![ sqr(0), sqr(0), sqr(4), /**/ sqr(1), sqr(0), sqr(9), /**/ sqr(8), sqr(0), sqr(0) ],
+        vec![ sqr(0), sqr(0), sqr(3), /**/ sqr(0), sqr(0), sqr(0), /**/ sqr(7), sqr(0), sqr(5) ],
+        /**************************************************************************************/
+        vec![ sqr(0), sqr(9), sqr(8), /**/ sqr(4), sqr(0), sqr(0), /**/ sqr(0), sqr(0), sqr(0) ],
+        vec![ sqr(0), sqr(2), sqr(0), /**/ sqr(0), sqr(5), sqr(0), /**/ sqr(9), sqr(0), sqr(0) ],
+        vec![ sqr(3), sqr(4), sqr(0), /**/ sqr(0), sqr(0), sqr(0), /**/ sqr(0), sqr(2), sqr(8) ],
+    ]
+}
+
+pub fn empty_board() -> Vec<Vec<SudokuSquare>> {
+    vec![
+        vec![ sqr(0), sqr(0), sqr(0), /**/ sqr(0), sqr(0), sqr(0), /**/ sqr(0), sqr(0), sqr(0) ],
+        vec![ sqr(0), sqr(0), sqr(0), /**/ sqr(0), sqr(0), sqr(0), /**/ sqr(0), sqr(0), sqr(0) ],
+        vec![ sqr(0), sqr(0), sqr(0), /**/ sqr(0), sqr(0), sqr(0), /**/ sqr(0), sqr(0), sqr(0) ],
+        /**************************************************************************************/
+        vec![ sqr(0), sqr(0), sqr(0), /**/ sqr(0), sqr(0), sqr(0), /**/ sqr(0), sqr(0), sqr(0) ],
+        vec![ sqr(0), sqr(0), sqr(0), /**/ sqr(0), sqr(0), sqr(0), /**/ sqr(0), sqr(0), sqr(0) ],
+        vec![ sqr(0), sqr(0), sqr(0), /**/ sqr(0), sqr(0), sqr(0), /**/ sqr(0), sqr(0), sqr(0) ],
+        /**************************************************************************************/
+        vec![ sqr(0), sqr(0), sqr(0), /**/ sqr(0), sqr(0), sqr(0), /**/ sqr(0), sqr(0), sqr(0) ],
+        vec![ sqr(0), sqr(0), sqr(0), /**/ sqr(0), sqr(0), sqr(0), /**/ sqr(0), sqr(0), sqr(0) ],
+        vec![ sqr(0), sqr(0), sqr(0), /**/ sqr(0), sqr(0), sqr(0), /**/ sqr(0), sqr(0), sqr(0) ],
     ]
 }
